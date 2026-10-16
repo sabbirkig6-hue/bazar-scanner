@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bazar Scanner</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f1f8f3;
+      color: #183b2b;
+    }
+    .app {
+      max-width: 440px;
+      margin: 20px auto;
+      padding: 22px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 5px 22px #0001;
+    }
+    h1 { color: #16834a; text-align: center; }
+    p { text-align: center; line-height: 1.7; }
+    .upload {
+      display: block;
+      padding: 25px 10px;
+      margin: 20px 0;
+      border: 2px dashed #16834a;
+      border-radius: 14px;
+      text-align: center;
+    }
+    input { max-width: 100%; margin-top: 15px; }
+    img {
+      display: none;
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      margin-top: 15px;
+      border-radius: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      background: #16834a;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; }
+    #result {
+      margin-top: 18px;
+      padding: 12px;
+      background: #f1f8f3;
+      border-radius: 10px;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>🛒 Bazar Scanner</h1>
+    <p>পণ্যের ছবি নির্বাচন করুন এবং স্ক্যান করুন।</p>
+
+    <label class="upload">
+      📷 পণ্যের ছবি নির্বাচন করুন
+      <br>
+      <input id="photo" type="file" accept="image/*">
+      <img id="preview" alt="নির্বাচিত পণ্যের ছবি">
+    </label>
+
+    <button id="scan">ছবি স্ক্যান করুন</button>
+    <div id="result">এখানে স্ক্যানের ফলাফল দেখা যাবে।</div>
+  </main>
+
+  <script>
+    const photo = document.getElementById("photo");
+    const preview = document.getElementById("preview");
+    const scan = document.getElementById("scan");
+    const result = document.getElementById("result");
+
+    photo.addEventListener("change", () => {
+      const file = photo.files[0];
+      if (!file) return;
+
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = "block";
+      result.textContent = "ছবি নির্বাচন করা হয়েছে।";
+    });
+
+    scan.addEventListener("click", async () => {
+      const file = photo.files[0];
+
+      if (!file) {
+        result.textContent = "আগে একটি পণ্যের ছবি নির্বাচন করুন।";
+        return;
+      }
+
+      scan.disabled = true;
+      result.textContent = "ছবি পাঠানো হচ্ছে...";
+
+      try {
+        const image = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image })
+        });
+
+        const data = await response.json();
+        result.textContent = data.message +
+          (data.note ? " — " + data.note : "");
+      } catch (error) {
+        result.textContent =
+          "সার্ভারের সঙ্গে সংযোগ হয়নি। পরে আবার চেষ্টা করুন।";
+      } finally {
+        scan.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

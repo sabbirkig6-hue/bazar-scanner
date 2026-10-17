@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samia AI</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #212121;
+      color: white;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 17px;
+      border-bottom: 1px solid #383838;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .welcome {
+      margin: auto;
+      text-align: center;
+      line-height: 1.8;
+      color: #eee;
+    }
+    .message {
+      max-width: 85%;
+      padding: 12px 15px;
+      border-radius: 18px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .user {
+      align-self: flex-end;
+      background: #414141;
+    }
+    .bot {
+      align-self: flex-start;
+      background: transparent;
+    }
+    .message img {
+      display: block;
+      max-width: 220px;
+      max-height: 260px;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-bottom: 8px;
+    }
+    #preview {
+      display: none;
+      max-width: 100px;
+      max-height: 100px;
+      border-radius: 10px;
+      margin: 8px 0;
+    }
+    footer { padding: 10px 12px 18px; }
+    .composer {
+      max-width: 700px;
+      margin: auto;
+      background: #303030;
+      border: 1px solid #505050;
+      border-radius: 25px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    button {
+      border: none;
+      cursor: pointer;
+      color: white;
+      background: #444;
+      border-radius: 50%;
+      min-width: 42px;
+      height: 42px;
+      font-size: 24px;
+    }
+    #send { background: white; color: #222; }
+    #question {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      color: white;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      padding: 10px 0;
+    }
+    #file { display: none; }
+    .hint {
+      color: #aaa;
+      text-align: center;
+      font-size: 11px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>Samia</header>
+
+  <main id="chat">
+    <div class="welcome" id="welcome">
+      <h2>হ্যালো! আমি Samia AI</h2>
+      <div>আপনি কী জানতে চান?</div>
+      <div>প্রশ্ন লিখুন অথবা + চিহ্নে ছবি বেছে নিন।</div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="composer">
+      <button id="plus" aria-label="ছবি যোগ করুন">+</button>
+      <input id="file" type="file" accept="image/*">
+      <input id="question" placeholder="Samia-কে কিছু জিজ্ঞেস করুন..." />
+      <button id="send" aria-label="পাঠান">↑</button>
+    </div>
+    <img id="preview" alt="নির্বাচিত ছবির প্রিভিউ">
+    <div class="hint">Samia AI ভুল উত্তর দিতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করুন।</div>
+  </footer>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const question = document.getElementById('question');
+    const file = document.getElementById('file');
+    const preview = document.getElementById('preview');
+    const welcome = document.getElementById('welcome');
+
+    document.getElementById('plus').onclick = () => file.click();
+
+    file.onchange = () => {
+      const selected = file.files[0];
+      if (!selected) return;
+      preview.src = URL.createObjectURL(selected);
+      preview.style.display = 'block';
+    };
+
+    function addMessage(text, who, imageUrl) {
+      welcome?.remove();
+      const div = document.createElement('div');
+      div.className = 'message ' + who;
+
+      if (imageUrl) {
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        div.appendChild(img);
+      }
+
+      const content = document.createElement('div');
+      content.textContent = text;
+      div.appendChild(content);
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    document.getElementById('send').onclick = () => {
+      const text = question.value.trim();
+      const selected = file.files[0];
+
+      if (!text && !selected) return;
+
+      const imageUrl = selected ? URL.createObjectURL(selected) : null;
+      addMessage(text || 'এই ছবির পণ্যটি শনাক্ত করুন।', 'user', imageUrl);
+
+      question.value = '';
+      file.value = '';
+      preview.style.display = 'none';
+
+      addMessage(
+        'আপনার চ্যাট ও ছবি পাঠানোর পরের ধাপে AI-এর সঙ্গে যুক্ত করা হবে।',
+        'bot'
+      );
+    };
+
+    question.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        document.getElementById('send').click();
+      }
+    });
+  </script>
+</body>
+  </html>
+  

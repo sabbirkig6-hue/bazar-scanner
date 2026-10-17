@@ -2,195 +2,166 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Samia AI</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #212121;
-      color: white;
-      height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-    header {
-      padding: 17px;
-      border-bottom: 1px solid #383838;
-      font-size: 22px;
-      font-weight: bold;
-    }
-    #chat {
-      flex: 1;
-      overflow-y: auto;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-    .welcome {
-      margin: auto;
-      text-align: center;
-      line-height: 1.8;
-      color: #eee;
-    }
-    .message {
-      max-width: 85%;
-      padding: 12px 15px;
-      border-radius: 18px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
-    .user {
-      align-self: flex-end;
-      background: #414141;
-    }
-    .bot {
-      align-self: flex-start;
-      background: transparent;
-    }
-    .message img {
-      display: block;
-      max-width: 220px;
-      max-height: 260px;
-      object-fit: contain;
-      border-radius: 12px;
-      margin-bottom: 8px;
-    }
-    #preview {
-      display: none;
-      max-width: 100px;
-      max-height: 100px;
-      border-radius: 10px;
-      margin: 8px 0;
-    }
-    footer { padding: 10px 12px 18px; }
-    .composer {
-      max-width: 700px;
-      margin: auto;
-      background: #303030;
-      border: 1px solid #505050;
-      border-radius: 25px;
-      padding: 8px 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    button {
-      border: none;
-      cursor: pointer;
-      color: white;
-      background: #444;
-      border-radius: 50%;
-      min-width: 42px;
-      height: 42px;
-      font-size: 24px;
-    }
-    #send { background: white; color: #222; }
-    #question {
-      flex: 1;
-      min-width: 0;
-      background: transparent;
-      color: white;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      padding: 10px 0;
-    }
-    #file { display: none; }
-    .hint {
-      color: #aaa;
-      text-align: center;
-      font-size: 11px;
-      margin-top: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#212121">
+<title>Samia</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#212121;color:#f5f5f5;font-family:Arial,sans-serif;height:100dvh;display:flex;flex-direction:column}
+header{padding:17px 20px;font-size:22px;font-weight:bold;border-bottom:1px solid #383838}
+#chat{flex:1;overflow-y:auto;padding:18px 14px;display:flex;flex-direction:column;gap:18px}
+.welcome{margin:auto;text-align:center;line-height:1.8;color:#eee}
+.message{max-width:88%;padding:12px 15px;border-radius:18px;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}
+.user{align-self:flex-end;background:#414141}
+.bot{align-self:flex-start;background:#2b2b2b}
+.message img{display:block;max-width:220px;max-height:250px;object-fit:contain;border-radius:12px;margin-bottom:8px}
+footer{padding:10px 12px 16px}
+.composer{max-width:720px;margin:auto;background:#303030;border:1px solid #505050;border-radius:25px;padding:8px;display:flex;align-items:center;gap:8px}
+button{border:0;cursor:pointer;color:white;background:#444;border-radius:50%;min-width:42px;height:42px;font-size:24px}
+#send{background:#fff;color:#222}
+#question{flex:1;min-width:0;background:transparent;color:white;border:0;outline:0;font-size:16px;padding:10px 0}
+#file{display:none}
+#preview{display:none;max-width:100px;max-height:100px;border-radius:10px;margin:8px auto}
+#status{text-align:center;color:#aaa;font-size:12px;margin-top:8px}
+button:disabled{opacity:.5}
+</style>
 </head>
 <body>
-  <header>Samia</header>
+<header>Samia</header>
+<main id="chat">
+<div class="welcome" id="welcome">
+<h2>হ্যালো! আমি Samia AI</h2>
+<div>আপনি কী জানতে চান?</div>
+<div>প্রশ্ন লিখুন অথবা + চিহ্নে ছবি যোগ করুন।</div>
+</div>
+</main>
+<footer>
+<img id="preview" alt="ছবির প্রিভিউ">
+<div class="composer">
+<button id="plus" type="button" aria-label="ছবি যোগ করুন">+</button>
+<input id="file" type="file" accept="image/*" capture="environment">
+<input id="question" placeholder="Samia-কে কিছু জিজ্ঞেস করুন..." autocomplete="off">
+<button id="send" type="button" aria-label="পাঠান">↑</button>
+</div>
+<div id="status">Samia AI</div>
+</footer>
+<script>
+const chat=document.getElementById("chat");
+const question=document.getElementById("question");
+const file=document.getElementById("file");
+const preview=document.getElementById("preview");
+const send=document.getElementById("send");
+const statusText=document.getElementById("status");
+let selectedImage=null;
 
-  <main id="chat">
-    <div class="welcome" id="welcome">
-      <h2>হ্যালো! আমি Samia AI</h2>
-      <div>আপনি কী জানতে চান?</div>
-      <div>প্রশ্ন লিখুন অথবা + চিহ্নে ছবি বেছে নিন।</div>
-    </div>
-  </main>
+document.getElementById("plus").onclick=()=>file.click();
 
-  <footer>
-    <div class="composer">
-      <button id="plus" aria-label="ছবি যোগ করুন">+</button>
-      <input id="file" type="file" accept="image/*">
-      <input id="question" placeholder="Samia-কে কিছু জিজ্ঞেস করুন..." />
-      <button id="send" aria-label="পাঠান">↑</button>
-    </div>
-    <img id="preview" alt="নির্বাচিত ছবির প্রিভিউ">
-    <div class="hint">Samia AI ভুল উত্তর দিতে পারে—গুরুত্বপূর্ণ তথ্য যাচাই করুন।</div>
-  </footer>
+file.onchange=()=>{
+ const f=file.files[0];
+ if(!f)return;
+ if(!f.type.startsWith("image/")){
+  statusText.textContent="একটি ছবি নির্বাচন করুন।";
+  file.value="";
+  return;
+ }
+ if(f.size>7*1024*1024){
+  statusText.textContent="ছবিটি ৭ MB-এর চেয়ে ছোট করে দিন।";
+  file.value="";
+  return;
+ }
+ selectedImage=f;
+ preview.src=URL.createObjectURL(f);
+ preview.style.display="block";
+ statusText.textContent="ছবি প্রস্তুত। চাইলে প্রশ্নও লিখুন।";
+};
 
-  <script>
-    const chat = document.getElementById('chat');
-    const question = document.getElementById('question');
-    const file = document.getElementById('file');
-    const preview = document.getElementById('preview');
-    const welcome = document.getElementById('welcome');
+function addMessage(text,who,imageUrl){
+ document.getElementById("welcome")?.remove();
+ const div=document.createElement("div");
+ div.className="message "+who;
+ if(imageUrl){
+  const img=document.createElement("img");
+  img.src=imageUrl;
+  img.alt="পাঠানো ছবি";
+  div.appendChild(img);
+ }
+ const content=document.createElement("div");
+ content.textContent=text;
+ div.appendChild(content);
+ chat.appendChild(div);
+ chat.scrollTop=chat.scrollHeight;
+}
 
-    document.getElementById('plus').onclick = () => file.click();
+async function sendMessage(){
+ const text=question.value.trim();
+ const image=selectedImage;
+ if(!text&&!image)return;
 
-    file.onchange = () => {
-      const selected = file.files[0];
-      if (!selected) return;
-      preview.src = URL.createObjectURL(selected);
-      preview.style.display = 'block';
-    };
+ let imageData=null;
+ if(image){
+  imageData=await new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onload=()=>resolve(reader.result);
+   reader.onerror=reject;
+   reader.readAsDataURL(image);
+  }).catch(()=>null);
+  if(!imageData){
+   statusText.textContent="ছবি পড়া যায়নি। আবার নির্বাচন করুন।";
+   return;
+  }
+ }
 
-    function addMessage(text, who, imageUrl) {
-      welcome?.remove();
-      const div = document.createElement('div');
-      div.className = 'message ' + who;
+ const displayUrl=imageData;
+ addMessage(text||(image?"এই ছবির পণ্যটি শনাক্ত করুন।":""),"user",displayUrl);
+ question.value="";
+ file.value="";
+ selectedImage=null;
+ preview.style.display="none";
+ send.disabled=true;
+ statusText.textContent="Samia উত্তর তৈরি করছে...";
 
-      if (imageUrl) {
-        const img = document.createElement('img');
-        img.src = imageUrl;
-        div.appendChild(img);
-      }
+ try{
+  let response,data;
+  if(imageData){
+   response=await fetch("/api/analyze",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({image:imageData})
+   });
+  }else{
+   response=await fetch("/api/chat",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({question:text})
+   });
+  }
 
-      const content = document.createElement('div');
-      content.textContent = text;
-      div.appendChild(content);
-      chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
+  data=await response.json();
+  if(!response.ok||!data.success){
+   throw new Error(data.message||"এখন উত্তর দেওয়া যাচ্ছে না।");
+  }
+  const answer=imageData
+   ?(data.result||data.message||"পণ্য শনাক্ত করা যায়নি।")
+   :(data.answer||data.message||"উত্তর পাওয়া যায়নি।");
+  addMessage(answer,"bot");
+  statusText.textContent="Samia AI";
+ }catch(error){
+  addMessage("দুঃখিত, উত্তর পাওয়া যায়নি। "+error.message,"bot");
+  statusText.textContent="আবার চেষ্টা করুন।";
+ }finally{
+  send.disabled=false;
+  question.focus();
+ }
+}
 
-    document.getElementById('send').onclick = () => {
-      const text = question.value.trim();
-      const selected = file.files[0];
-
-      if (!text && !selected) return;
-
-      const imageUrl = selected ? URL.createObjectURL(selected) : null;
-      addMessage(text || 'এই ছবির পণ্যটি শনাক্ত করুন।', 'user', imageUrl);
-
-      question.value = '';
-      file.value = '';
-      preview.style.display = 'none';
-
-      addMessage(
-        'আপনার চ্যাট ও ছবি পাঠানোর পরের ধাপে AI-এর সঙ্গে যুক্ত করা হবে।',
-        'bot'
-      );
-    };
-
-    question.addEventListener('keydown', event => {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        document.getElementById('send').click();
-      }
-    });
-  </script>
+send.onclick=sendMessage;
+question.addEventListener("keydown",event=>{
+ if(event.key==="Enter"){
+  event.preventDefault();
+  sendMessage();
+ }
+});
+</script>
 </body>
-  </html>
-  
+</html>
